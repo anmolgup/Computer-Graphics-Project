@@ -1,0 +1,142 @@
+<html>
+	<head>
+		<title>STAIRS</title>
+		<style>
+			body { margin: 0; }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+		<script src="js/three.js"></script>
+		<script src="js/OrbitControls.js"></script>
+		<script src="js/Fog.js"></script>
+		<script src="js/TrackballControls.js"></script>
+		<script>
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 100, window.innerWidth/window.innerHeight, 1, 1000 );
+			scene.add(camera);
+			camera.position.set( 8,-2, -3);
+
+			var renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+
+			var control=new THREE.OrbitControls(camera,renderer.domElement);
+			control.target.set( 0, -0.2, -0.2 );
+
+			var path = 'js/Bridge2/';
+				var format = '.jpg';
+			var envMap = new THREE.CubeTextureLoader().load( [
+					path + 'posx' + format, path + 'negx' + format,
+					path + 'posy' + format, path + 'negy' + format,
+					path + 'posz' + format, path + 'negz' + format
+				] );
+	        scene.background = envMap;
+			
+            scene.fog = new THREE.Fog( 0x808080, 3000, 6000 );
+            //scene.background = new THREE.Color( 0xf0f0f0 );
+			var ambientLight = new THREE.AmbientLight( 0x222222 );
+			var light = new THREE.DirectionalLight( 0xffffff, 1.0 );
+			light.position.set( 200, 400, 500 );				
+			var light2 = new THREE.DirectionalLight( 0xffffff, 1.0 );
+			light2.position.set( -400, 200, -300);
+
+			camera.add(ambientLight);
+			camera.add(light);
+			camera.add(light2);
+
+			////STAIRS
+
+            var stepMaterialVertical = new THREE.MeshLambertMaterial( { color: 0xA85F35 } );
+			var stepMaterialHorizontal = new THREE.MeshLambertMaterial( { color: 0xBC7349} );
+
+			var stepWidth = 2;
+			var stepSize = 1;
+			var stepThickness = 0.5;
+			
+			var verticalStepHeight = stepSize;
+			var horizontalStepDepth = stepSize*2;
+
+			var stepHalfThickness = stepThickness/2;
+			
+			
+			var stepVertical = new THREE.CubeGeometry(stepWidth, verticalStepHeight, stepThickness);
+			var stepHorizontal = new THREE.CubeGeometry(stepWidth, stepThickness, horizontalStepDepth);
+			var stepMesh;
+
+			// Make and position the vertical part of the step
+			stepMesh = new THREE.Mesh( stepVertical, stepMaterialVertical );
+			
+			stepMesh.position.x = 0;			
+			stepMesh.position.y = verticalStepHeight/2;
+			stepMesh.position.z = 0;			
+			scene.add( stepMesh );
+
+			
+			stepMesh = new THREE.Mesh( stepHorizontal, stepMaterialHorizontal );
+			stepMesh.position.x = 0;
+			
+			stepMesh.position.y = stepThickness/2 + verticalStepHeight;
+			
+			stepMesh.position.z = horizontalStepDepth/2 - stepHalfThickness;
+			scene.add( stepMesh );
+			
+			for(var i=2;i<7;i++)
+			{
+			    stepMesh = new THREE.Mesh( stepVertical, stepMaterialVertical );
+				stepMesh.position.x = 0;			// centered at origin
+				stepMesh.position.y = (i-1)*(verticalStepHeight+stepThickness)+verticalStepHeight/2;	// half of height: put it above ground plane
+				stepMesh.position.z = (i-1)*(horizontalStepDepth - stepHalfThickness);			// centered at origin
+				scene.add( stepMesh );
+
+				
+				stepMesh = new THREE.Mesh( stepHorizontal, stepMaterialHorizontal );
+				stepMesh.position.x = 0;
+				
+				stepMesh.position.y = (i-1)*(verticalStepHeight+stepThickness)+stepThickness/2 + verticalStepHeight;
+				
+				stepMesh.position.z = (i-1)*(horizontalStepDepth - stepHalfThickness)+horizontalStepDepth/2 - stepHalfThickness;
+				scene.add( stepMesh );
+			    
+			}
+
+			/////
+			/// CUP
+            var cupMaterial = new THREE.MeshLambertMaterial( { color: 0xFDD017});
+			// THREE.CylinderGeometry takes (radiusTop, radiusBottom, height, segmentsRadius)
+			var cupGeo = new THREE.CylinderGeometry( 1, 0.5, 2, 0.3 );
+			var cup = new THREE.Mesh( cupGeo, cupMaterial );
+			cup.position.x = 0;
+			cup.position.y = 10.2;
+			cup.position.z = 10;
+			scene.add( cup );
+			cupGeo = new THREE.CylinderGeometry( 1, 1, 0.5, 0.3 );
+			cupBase = new THREE.Mesh( cupGeo, cupMaterial );
+			cupBase.position.x = 0;
+			cupBase.position.y = 9;
+			cupBase.position.z = 10;
+			scene.add( cupBase );
+			///
+			
+            window.addEventListener( 'resize', onWindowResize, false );
+            function onWindowResize() {
+				windowHalfX = window.innerWidth / 2;
+				windowHalfY = window.innerHeight / 2;
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+			}
+			
+
+			var animate = function () {
+				requestAnimationFrame( animate );
+
+				//animate//
+
+				renderer.render( scene, camera );
+			};
+
+			animate();
+		</script>
+	</body>
+</html>
